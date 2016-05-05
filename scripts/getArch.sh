@@ -57,8 +57,11 @@ IID=${BASE%.tar.gz}
 
 mkdir -p "/tmp/${IID}"
 
+
+set +e
 FILES="$(tar -tf $INFILE | grep -e "/busybox\$") "
 FILES+="$(tar -tf $INFILE | grep -E "/sbin/[[:alpha:]]+")"
+set -e
 for TARGET in ${FILES}
 do
     SKIP=$(echo "${TARGET}" | fgrep -o / | wc -l)
@@ -71,6 +74,8 @@ do
     fi
 
     FILETYPE=$(file ${TARGETLOC})
+
+    echo "${FILETYPE}"
 
     echo -n "${TARGET}: "
     getArch
