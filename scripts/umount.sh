@@ -31,10 +31,10 @@ IMAGE_DIR=`get_fs_mount ${IID}`
 DEVICE=/dev/mapper/loop0p1
 
 echo "----Unmounting----"
-umount "${DEVICE}"
+umount "${IMAGE_DIR}"
+#umount "${DEVICE}"
 
 echo "----Disconnecting Device File----"
-umount "${IMAGE}"
 kpartx -d "${IMAGE}"
 losetup -d "${DEVICE}" &>/dev/null
 dmsetup remove loop0p1 &>/dev/null
