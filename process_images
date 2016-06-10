@@ -1,0 +1,31 @@
+#!//bin/bash
+
+if [ -e ./firmadyne.config ]; then
+    source ./firmadyne.config
+elif [ -e ../firmadyne.config ]; then
+    source ../firmadyne.config
+else
+    echo "Error: Could not find 'firmadyne.config'!"
+    exit 1
+fi
+
+DEVICE=/dev/mapper/loop0p1
+
+indices=$(ls images/*.tar.gz | sed 's/images\/\(.*\)\.tar\.gz/\1/')
+mkdir -p ./process_output
+for i in $indices; do
+    out_file=./process_output/${i}
+    echo "Processing image ${i}" > $out_file
+    exec >> $out_file
+    exec 2>&1
+	./scripts/getArch.sh "./images/${i}.tar.gz" 
+    ./scripts/tar2db.py -i "${i}" -f "./images/${i}.tar.gz" 
+    sudo ./scripts/makeImage.sh "${i}"
+    echo "Force unmounting the image"
+    IMAGE=`get_fs ${i}`
+    umount "${DEVICE}"
+    kpartx -d "${IMAGE}"
+    losetup -d "${DEVICE}" 
+    dmsetup remove loop0p1 
+    echo "End unmounting"
+done
